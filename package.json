@@ -1,0 +1,20 @@
+{
+	"name": "website-seo-analyzer",
+	"version": "1.0.0",
+	"description": "Simple Website SEO Analyzer Tool (Node + Express + Cheerio)",
+	"main": "server.js",
+	"type": "commonjs",
+	"scripts": {
+		"start": "node server.js",
+		"dev": "nodemon server.js"
+	},
+	"dependencies": {
+		"cheerio": "^1.0.0",
+		"express": "^4.19.2",
+		"tldts": "^6.1.32",
+		"undici": "^6.19.8"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.7"
+	}
+}

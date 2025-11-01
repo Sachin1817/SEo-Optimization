@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Website SEO Analyzer</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+	<style>
+		:root {
+			--bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			--card: #ffffff;
+			--text: #1a202c;
+			--muted: #718096;
+			--accent: #667eea;
+			--accent-2: #764ba2;
+			--border: #e2e8f0;
+			--shadow: 0 20px 60px rgba(0,0,0,0.3);
+		}
+
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+		
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+			margin: 0;
+			padding: 20px;
+			background: var(--bg);
+			min-height: 100vh;
+			color: var(--text);
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			animation: fadeIn 0.6s ease-out;
+		}
+
+		.card {
+			background: var(--card);
+			padding: 32px;
+			border-radius: 20px;
+			box-shadow: var(--shadow);
+			margin-bottom: 24px;
+			animation: slideUp 0.5s ease-out;
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+		}
+
+		h1 {
+			font-size: 32px;
+			margin-bottom: 8px;
+			background: linear-gradient(135deg, var(--accent), var(--accent-2));
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			animation: fadeIn 0.8s ease-out;
+		}
+
+		.small {
+			color: var(--muted);
+			font-size: 14px;
+		}
+
+		.form-row {
+			display: flex;
+			gap: 12px;
+			margin-top: 20px;
+		}
+
+		.input {
+			flex: 1;
+			padding: 14px 18px;
+			border: 2px solid var(--border);
+			border-radius: 12px;
+			font-size: 16px;
+			transition: all 0.3s ease;
+			outline: none;
+		}
+
+		.input:focus {
+			border-color: var(--accent);
+			box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+			transform: translateY(-2px);
+		}
+
+		.btn {
+			padding: 14px 28px;
+			background: linear-gradient(135deg, var(--accent), var(--accent-2));
+			color: white;
+			border: none;
+			border-radius: 12px;
+			font-size: 16px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+		}
+
+		.btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+		}
+
+		.btn:active {
+			transform: translateY(0);
+		}
+
+		.status {
+			min-height: 24px;
+			margin-top: 12px;
+			font-size: 14px;
+		}
+
+		.spinner {
+			display: inline-block;
+			width: 16px;
+			height: 16px;
+			border: 3px solid rgba(102, 126, 234, 0.2);
+			border-top-color: var(--accent);
+			border-radius: 50%;
+			animation: spin 0.8s linear infinite;
+			vertical-align: -3px;
+			margin-right: 8px;
+		}
+
+		.report {
+			margin-top: 24px;
+		}
+
+		.section {
+			margin-top: 24px;
+			padding: 20px;
+			background: #f8f9fa;
+			border-radius: 12px;
+			border-left: 4px solid var(--accent);
+			animation: fadeInUp 0.5s ease-out both;
+			transition: all 0.3s ease;
+		}
+
+		.section:hover {
+			transform: translateX(5px);
+			box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		}
+
+		.section h4 {
+			font-size: 20px;
+			margin-bottom: 16px;
+			color: var(--accent-2);
+			position: relative;
+		}
+
+		.table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 12px;
+			background: white;
+			border-radius: 8px;
+			overflow: hidden;
+		}
+
+		.table th, .table td {
+			border: 1px solid var(--border);
+			padding: 14px;
+			text-align: left;
+		}
+
+		.table th {
+			background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+			color: #1a202c;
+			font-weight: 600;
+		}
+
+		.table tbody tr {
+			transition: background-color 0.2s ease;
+		}
+
+		.table tbody tr:hover {
+			background: #f0f4ff;
+			transform: scale(1.01);
+		}
+
+		.table tbody tr:nth-child(even) {
+			background: #fafafa;
+		}
+
+		.kv {
+			width: 100%;
+			border-collapse: collapse;
+			background: white;
+			border-radius: 8px;
+			overflow: hidden;
+		}
+
+		.kv td {
+			border-bottom: 1px solid var(--border);
+			padding: 14px;
+		}
+
+		.kv td:first-child {
+			font-weight: 600;
+			color: #4a5568;
+			width: 250px;
+			background: #f8f9fa;
+		}
+
+		.report a {
+			color: var(--accent-2);
+			text-decoration: none;
+			font-size: 16px;
+			font-weight: 500;
+			transition: all 0.2s ease;
+			padding: 2px 4px;
+			border-radius: 4px;
+		}
+
+		.report a:hover {
+			background: #f0f4ff;
+			text-decoration: underline;
+			transform: scale(1.05);
+		}
+
+		.badge {
+			display: inline-block;
+			padding: 6px 14px;
+			background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+			border-radius: 20px;
+			color: var(--accent-2);
+			font-size: 16px;
+			font-weight: 700;
+			border: 2px solid var(--accent);
+		}
+
+		.scorebar {
+			flex: 1;
+			height: 16px;
+			background: #eef2ff;
+			border-radius: 10px;
+			overflow: hidden;
+			position: relative;
+		}
+
+		.scorebar > div {
+			height: 100%;
+			background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+			transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+			border-radius: 10px;
+			animation: shimmer 2s infinite;
+		}
+
+		.scoreline {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			margin: 12px 0;
+		}
+
+		.chart-container {
+			position: relative;
+			height: 300px;
+			margin: 20px 0;
+			background: white;
+			padding: 20px;
+			border-radius: 12px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		}
+
+		.keyword-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin-top: 12px;
+		}
+
+		.keyword-tag {
+			padding: 8px 16px;
+			background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+			border-radius: 20px;
+			border: 2px solid var(--accent);
+			color: var(--accent-2);
+			font-weight: 600;
+			transition: all 0.2s ease;
+			animation: popIn 0.3s ease-out;
+		}
+
+		.keyword-tag:hover {
+			transform: scale(1.1) rotate(2deg);
+			box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+		}
+
+		.suggestion-card {
+			margin: 12px 0;
+			padding: 16px;
+			background: white;
+			border-radius: 8px;
+			border-left: 4px solid #f59e0b;
+			transition: all 0.3s ease;
+		}
+
+		.suggestion-card:hover {
+			transform: translateX(5px);
+			box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		}
+
+		ul {
+			margin: 12px 0;
+			padding-left: 24px;
+		}
+
+		ul li {
+			margin: 8px 0;
+			color: #4a5568;
+			line-height: 1.6;
+		}
+
+		@keyframes fadeIn {
+			from { opacity: 0; }
+			to { opacity: 1; }
+		}
+
+		@keyframes fadeInUp {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@keyframes slideUp {
+			from {
+				opacity: 0;
+				transform: translateY(30px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@keyframes spin {
+			to { transform: rotate(360deg); }
+		}
+
+		@keyframes shimmer {
+			0% { background-position: -200% center; }
+			100% { background-position: 200% center; }
+		}
+
+		@keyframes popIn {
+			from {
+				opacity: 0;
+				transform: scale(0.8);
+			}
+			to {
+				opacity: 1;
+				transform: scale(1);
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="card">
+			<h1>🔍 Website SEO Analyzer</h1>
+			<p class="small">Enter a URL to analyze on-page SEO signals and get optimization recommendations.</p>
+			<form id="form" class="form-row">
+				<input class="input" type="text" id="url" placeholder="https://example.com" />
+				<button class="btn" type="submit">Analyze</button>
+			</form>
+			<div id="status" class="small status"></div>
+			<h3 style="margin-top:24px; color: var(--accent-2);">📊 Analysis Report</h3>
+			<div id="out" class="report">Run an analysis to see results...</div>
+		</div>
+	</div>
+
+	<script>
+		const form = document.getElementById('form');
+		const urlEl = document.getElementById('url');
+		const out = document.getElementById('out');
+		const statusEl = document.getElementById('status');
+		let scoreChart = null;
+
+		function esc(str) {
+			const s = String(str == null ? '' : str);
+			return s
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;');
+		}
+
+		function renderList(items) {
+			if (!items || !items.length) return '<span class="small">None</span>';
+			return '<ul>' + items.map(i => `<li>${esc(i)}</li>`).join('') + '</ul>';
+		}
+
+		function renderLinks(links) {
+			if (!links || !links.sample) return '';
+			const rows = links.sample.map(l => `<tr><td>${esc(l.type)}</td><td><a href="${esc(l.href)}" target="_blank" rel="noopener" style="font-size:16px; font-weight:500;">${esc(l.href)}</a></td></tr>`).join('');
+			return `
+				<div class="section">
+					<h4>🔗 Links</h4>
+					<table class="table">
+						<thead><tr><th>Type</th><th>URL (sample)</th></tr></thead>
+						<tbody>${rows || '<tr><td colspan="2" class="small">No links found</td></tr>'}</tbody>
+					</table>
+					<div class="small" style="margin-top:12px;">Total: ${links.total} · Internal: ${links.internal} · External: ${links.external}</div>
+				</div>
+			`;
+		}
+
+		function renderChart(breakdown) {
+			if (!breakdown || !breakdown.length) return '';
+
+			const labels = breakdown.map(item => item.item.substring(0, 30));
+			const data = breakdown.map(item => item.points);
+			const colors = data.map(points => 
+				points > 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)'
+			);
+
+			setTimeout(() => {
+				const ctx = document.getElementById('scoreChart');
+				if (ctx && scoreChart) {
+					scoreChart.destroy();
+				}
+				if (ctx) {
+					scoreChart = new Chart(ctx, {
+						type: 'bar',
+						data: {
+							labels: labels,
+							datasets: [{
+								label: 'Points',
+								data: data,
+								backgroundColor: colors,
+								borderColor: colors.map(c => c.replace('0.8', '1')),
+								borderWidth: 2,
+								borderRadius: 8
+							}]
+						},
+						options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							plugins: {
+								legend: {
+									display: false
+								},
+								tooltip: {
+									backgroundColor: 'rgba(0,0,0,0.8)',
+									padding: 12,
+									titleFont: { size: 14 },
+									bodyFont: { size: 13 }
+								}
+							},
+							scales: {
+								y: {
+									beginAtZero: true,
+									max: 15,
+									ticks: {
+										color: '#718096'
+									},
+									grid: {
+										color: '#e2e8f0'
+									}
+								},
+								x: {
+									ticks: {
+										color: '#718096',
+										maxRotation: 45,
+										minRotation: 45
+									},
+									grid: {
+										display: false
+									}
+								}
+							},
+							animation: {
+								duration: 1500,
+								easing: 'easeInOutQuart'
+							}
+						}
+					});
+				}
+			}, 100);
+
+			return '<div class="chart-container"><canvas id="scoreChart"></canvas></div>';
+		}
+
+		function renderKeywordSuggestions(keywords) {
+			if (!keywords || (!keywords.topKeywords?.length && !keywords.suggestedContent?.length && !keywords.keywordGaps?.length)) return '';
+
+			let html = '<div class="section"><h4>🎯 Keyword & Content Suggestions</h4>';
+
+			if (keywords.topKeywords?.length > 0) {
+				html += '<div style="margin:16px 0;"><strong>Top Keywords Found:</strong>';
+				html += '<div class="keyword-list">';
+				keywords.topKeywords.forEach((kw, i) => {
+					html += `<div class="keyword-tag" style="animation-delay: ${i * 0.1}s;">${esc(kw.word)} (${kw.count})</div>`;
+				});
+				html += '</div></div>';
+			}
+
+			if (keywords.keywordGaps?.length > 0) {
+				html += '<div style="margin:16px 0;"><strong>Missing Keywords in Meta:</strong>';
+				html += '<div class="keyword-list">';
+				keywords.keywordGaps.forEach((kw, i) => {
+					html += `<div class="keyword-tag" style="animation-delay: ${i * 0.1}s; border-color: #f59e0b;">+ ${esc(kw)}</div>`;
+				});
+				html += '</div></div>';
+			}
+
+			if (keywords.suggestedContent?.length > 0) {
+				html += '<div style="margin:16px 0;"><strong>Content Improvement Suggestions:</strong>';
+				keywords.suggestedContent.forEach((sug, i) => {
+					html += `<div class="suggestion-card" style="animation-delay: ${i * 0.1}s;">
+						<strong>${esc(sug.action)}</strong>
+						<p style="margin:8px 0; color: #718096;">${esc(sug.reason)}</p>
+						<ul style="margin-top:8px;">
+							${sug.suggestions.map(s => `<li>${esc(s)}</li>`).join('')}
+						</ul>
+					</div>`;
+				});
+				html += '</div>';
+			}
+
+			html += '</div>';
+			return html;
+		}
+
+		function renderReport(data) {
+			if (!data) return '<div class="small">No data.</div>';
+			const p = data.page || {};
+			const s = data.social || { og: {}, twitter: {} };
+			const robots = data.robots || {};
+			const statuses = data.linkStatuses || {};
+			const score = data.score || { score: 0, total: 100, breakdown: [], tips: [] };
+			const keywords = data.keywordSuggestions || {};
+			const scorePercent = Math.max(0, Math.min(100, score.score || 0));
+
+			return `
+				<div class="section">
+					<h4>📈 SEO Score: ${scorePercent}/100</h4>
+					<div class="scoreline">
+						<div class="badge">${scorePercent}/100</div>
+						<div class="scorebar"><div data-target="${scorePercent}" style="width:0%;"></div></div>
+					</div>
+					<div class="small" style="margin-top:8px;">Based on on-page checks, structure, and link health.</div>
+					${renderChart(score.breakdown)}
+				</div>
+
+				${renderKeywordSuggestions(keywords)}
+
+				<div class="section">
+					<h4>📄 Page Information</h4>
+					<table class="kv">
+						<tr><td>URL</td><td><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.url)}</a></td></tr>
+						<tr><td>Title</td><td>${esc(p.title || '')} <span class="small">(${p.titleLength || 0} chars)</span></td></tr>
+						<tr><td>Meta description</td><td>${esc(p.metaDescription || '')} <span class="small">(${p.metaDescriptionLength || 0} chars)</span></td></tr>
+						<tr><td>Robots</td><td>${esc(p.metaRobots || '')}</td></tr>
+						<tr><td>Canonical</td><td>${esc(p.canonical || '')}</td></tr>
+						<tr><td>Viewport</td><td>${p.viewportPresent ? 'Yes' : 'No'}</td></tr>
+						<tr><td>Lang</td><td>${esc(p.lang || '')}</td></tr>
+						<tr><td>H1 count</td><td>${p.h1Count || 0} ${p.h1Samples && p.h1Samples.length ? '— ' + esc(p.h1Samples.slice(0,3).join(' | ')) : ''}</td></tr>
+						<tr><td>Images</td><td>Total: ${p.images?.total || 0}; Without alt: ${p.images?.withoutAlt || 0}</td></tr>
+						<tr><td>Word count</td><td>${p.wordCount || 0}</td></tr>
+					</table>
+				</div>
+
+				${renderLinks(data.links)}
+
+				<div class="section">
+					<h4>🌐 Social Tags</h4>
+					<table class="kv">
+						<tr><td>OG Title</td><td>${esc(s.og?.title || '')}</td></tr>
+						<tr><td>OG Description</td><td>${esc(s.og?.description || '')}</td></tr>
+						<tr><td>Twitter Title</td><td>${esc(s.twitter?.title || '')}</td></tr>
+						<tr><td>Twitter Description</td><td>${esc(s.twitter?.description || '')}</td></tr>
+					</table>
+				</div>
+
+				<div class="section">
+					<h4>🤖 robots.txt / sitemap</h4>
+					<table class="kv">
+						<tr><td>robots.txt</td><td><a href="${esc(robots.robotsUrl || '')}" target="_blank" rel="noopener">${esc(robots.robotsUrl || '')}</a></td></tr>
+						<tr><td>Sitemap</td><td>${esc(robots.sitemapUrl || '')}</td></tr>
+					</table>
+				</div>
+
+				<div class="section">
+					<h4>🔍 Link Statuses</h4>
+					<div class="small">Checked: ${statuses.checked || 0} · Broken: ${statuses.brokenCount || 0}</div>
+				</div>
+
+				<div class="section">
+					<h4>💡 Recommendations</h4>
+					${renderList(data.recommendations || [])}
+				</div>
+			`;
+		}
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const url = urlEl.value.trim();
+			if (!url) return;
+			statusEl.innerHTML = '<span class="spinner"></span>Analyzing...';
+			out.textContent = '';
+			if (scoreChart) {
+				scoreChart.destroy();
+				scoreChart = null;
+			}
+			try {
+				const q = new URLSearchParams({ url }).toString();
+				const res = await fetch(`/api/analyze?${q}`);
+				const data = await res.json();
+				statusEl.textContent = '';
+				out.innerHTML = renderReport(data);
+				
+				// Animate sections
+				const sections = out.querySelectorAll('.section');
+				sections.forEach((sec, i) => {
+					sec.style.animationDelay = (i * 100) + 'ms';
+				});
+
+				// Animate score bar
+				const bars = out.querySelectorAll('.scorebar > div[data-target]');
+				bars.forEach(bar => {
+					const pct = parseInt(bar.getAttribute('data-target') || '0', 10);
+					setTimeout(() => {
+						bar.style.width = pct + '%';
+					}, 300);
+				});
+
+				// Animate keyword tags
+				const tags = out.querySelectorAll('.keyword-tag');
+				tags.forEach((tag, i) => {
+					tag.style.animationDelay = (i * 0.1) + 's';
+				});
+			} catch (err) {
+				statusEl.textContent = 'Error running analysis.';
+				out.textContent = String(err);
+			}
+		});
+	</script>
+</body>
+</html>
