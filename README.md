@@ -77,7 +77,7 @@ Example response structure:
   "keywordSuggestions": { "topKeywords": [...], "suggestedContent": [...], "keywordGaps": [...] }
 }
 ```
-
+![Sample of Output](https://github.com/Sachin1817/SEo-Optimization/blob/00f6fefc4dfb03d78a54edc66501cc7fce2fb479/seo.png)
 ## Dependencies
 
 - `express`: Web server framework.
